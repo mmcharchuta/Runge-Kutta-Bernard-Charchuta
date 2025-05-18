@@ -105,8 +105,6 @@ def RK45(p53, mdmcyto, mdmn, pten, h, siRNA=False, pten_off=False, no_DNA_damage
         h *= min(max(0.1, s), 5.0)
 
 def main():
-    h = 6 # time step in minutes
-    iterations = int(48*60/h) # number of iterations during 48 hours
     print("Default initial values:")
     print("p53_0 = 10")
     print("mdmcyto_0 = 2000")
@@ -114,24 +112,27 @@ def main():
     print("pten_0 = 2000")
     use_defaults = input("Use default initial values? (y/n): ").strip().lower()
     if use_defaults == 'y':
-        p53_0 = 10
-        mdmcyto_0 = 2000
-        mdmn_0 = 10000
-        pten_0 = 2000
+        h = 0.5 # time step in minutes
+        p53_0 = 50
+        mdmcyto_0 = 100
+        mdmn_0 = 100
+        pten_0 = 300
     else:
         try:
+            h = float(input("Enter time step in minutes: "))
             p53_0 = float(input("Enter initial value for p53: "))
             mdmcyto_0 = float(input("Enter initial value for mdmcyto: "))
             mdmn_0 = float(input("Enter initial value for mdmn: "))
             pten_0 = float(input("Enter initial value for pten: "))
         except ValueError:
             print("Invalid input. Using default values.")
-            p53_0 = 10
-            mdmcyto_0 = 2000
-            mdmn_0 = 10000
-            pten_0 = 2000
+            h = 0.5 # time step in minutes
+            p53_0 = 50
+            mdmcyto_0 = 100
+            mdmn_0 = 100
+            pten_0 = 300
     print(p53_0, mdmcyto_0, mdmn_0, pten_0)
-
+    iterations = int(48*60/h) # number of iterations during 48 hours
     output_folder = "plots"
     os.makedirs(output_folder, exist_ok=True)
     rk4_dir = os.path.join(output_folder, "RK4const")
@@ -175,8 +176,9 @@ def main():
         plt.xlabel("Time [min]")
         plt.ylabel("Concentration [nM]")
         plt.title(f"Concentration of proteins in 48 hours ({condition}) - RK4const")
+        plt.yscale("log")
         plt.legend()
-        plt.grid(True)
+        plt.grid(True, which="both", ls="--")
         filename = os.path.join(rk4_dir, f"{condition.replace(' ', '_')}.png")
         plt.savefig(filename)
         plt.close()
@@ -198,8 +200,9 @@ def main():
         plt.xlabel("Time [min]")
         plt.ylabel("Concentration [nM]")
         plt.title(f"Concentration of proteins in 48 hours ({condition}) - RK45")
+        plt.yscale("log")
         plt.legend()
-        plt.grid(True)
+        plt.grid(True, which="both", ls="--")
         filename = os.path.join(rk45_dir, f"{condition.replace(' ', '_')}.png")
         plt.savefig(filename)
         plt.close()
