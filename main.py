@@ -112,7 +112,7 @@ def main():
     print("mdmcyto_0 = 2000")
     print("mdmn_0 = 10000")
     print("pten_0 = 2000")
-    use_defaults = 'y' #input("Use default initial values? (y/n): ").strip().lower()
+    use_defaults = input("Use default initial values? (y/n): ").strip().lower()
     if use_defaults == 'y':
         p53_0 = 10
         mdmcyto_0 = 2000
