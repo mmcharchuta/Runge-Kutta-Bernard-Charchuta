@@ -69,10 +69,29 @@ def main():
     # DANE:
     h = 6 # time step in minutes
     iterations = int(48*60/h) # number of iterations during 48 hours
-    p53_0 = 10
-    mdmcyto_0 = 2000
-    mdmn_0 = 10000
-    pten_0 = 2000
+    print("Default initial values:")
+    print("p53_0 = 10")
+    print("mdmcyto_0 = 2000")
+    print("mdmn_0 = 10000")
+    print("pten_0 = 2000")
+    use_defaults = input("Use default initial values? (y/n): ").strip().lower()
+    if use_defaults == 'y':
+        p53_0 = 10
+        mdmcyto_0 = 2000
+        mdmn_0 = 10000
+        pten_0 = 2000
+    else:
+        try:
+            p53_0 = float(input("Enter initial value for p53: "))
+            mdmcyto_0 = float(input("Enter initial value for mdmcyto: "))
+            mdmn_0 = float(input("Enter initial value for mdmn: "))
+            pten_0 = float(input("Enter initial value for pten: "))
+        except ValueError:
+            print("Invalid input. Using default values.")
+            p53_0 = 10
+            mdmcyto_0 = 2000
+            mdmn_0 = 10000
+            pten_0 = 2000
     print(p53_0, mdmcyto_0, mdmn_0, pten_0)
 
     output_folder = "plots"
