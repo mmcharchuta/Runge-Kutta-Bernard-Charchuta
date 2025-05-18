@@ -180,6 +180,7 @@ def main():
         filename = os.path.join(rk4_dir, f"{condition.replace(' ', '_')}.png")
         plt.savefig(filename)
         plt.close()
+
         # RK45 simulation
         p53, mdmcyto, mdmn, pten = p53_0, mdmcyto_0, mdmn_0, pten_0
         time_values, p53_values, mdmcyto_values, mdmn_values, pten_values = [], [], [], [], []
