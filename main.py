@@ -106,17 +106,17 @@ def RK45(p53, mdmcyto, mdmn, pten, h, siRNA=False, pten_off=False, no_DNA_damage
 
 def main():
     print("Default initial values:")
-    print("p53_0 = 10")
-    print("mdmcyto_0 = 2000")
-    print("mdmn_0 = 10000")
-    print("pten_0 = 2000")
+    print("p53_0 = 26854")
+    print("mdmcyto_0 = 11173")
+    print("mdmn_0 = 17245")
+    print("pten_0 = 154378")
     use_defaults = input("Use default initial values? (y/n): ").strip().lower()
     if use_defaults == 'y':
         h = 0.5 # time step in minutes
-        p53_0 = 50
-        mdmcyto_0 = 100
-        mdmn_0 = 100
-        pten_0 = 300
+        p53_0 = 26854
+        mdmcyto_0 = 11173
+        mdmn_0 = 17245
+        pten_0 = 154378
     else:
         try:
             h = float(input("Enter time step in minutes: "))
