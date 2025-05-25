@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+import random
 
 p1 = 8.8
 p2 = 440
@@ -104,6 +105,60 @@ def RK45(p53, mdmcyto, mdmn, pten, h, siRNA=False, pten_off=False, no_DNA_damage
             s = 0.9 * (tol / err)**(1/5)
         h *= min(max(0.1, s), 5.0)
 
+def gillespie_step(state, siRNA, pten_off, no_DNA_damage):
+    p53, mdmcyto, mdmn, pten = state
+
+    # Propensities (elementary reactions, simplified for demonstration)
+    propensities = [
+        p1,  # p53 production
+        d1 * p53 * mdmn**2,  # p53 degradation
+        p2 * (value_siRNA if siRNA else 1) * (p53**4) / ((p53**4) + (k2**4)),  # mdmcyto production
+        k1 * (k3**2) / ((k3**2) + (pten**2)) * mdmcyto,  # mdmcyto to mdmn
+        d2 * (value_no_DNA_damage if no_DNA_damage else 1) * mdmcyto,  # mdmcyto degradation
+        k1 * (k3**2) / ((k3**2) + (pten**2)) * mdmcyto,  # mdmn production
+        d2 * (value_no_DNA_damage if no_DNA_damage else 1) * mdmn,  # mdmn degradation
+        (p3 if not pten_off else p3 * value_PTEN_off) * (p53**4) / ((p53**4) + (k2**4)),  # pten production
+        d3 * pten  # pten degradation
+    ]
+    changes = [
+        [1, 0, 0, 0],    # p53 production
+        [-1, 0, 0, 0],   # p53 degradation
+        [0, 1, 0, 0],    # mdmcyto production
+        [0, -1, 1, 0],   # mdmcyto to mdmn
+        [0, -1, 0, 0],   # mdmcyto degradation
+        [0, 0, 1, 0],    # mdmn production
+        [0, 0, -1, 0],   # mdmn degradation
+        [0, 0, 0, 1],    # pten production
+        [0, 0, 0, -1],   # pten degradation
+    ]
+    a0 = sum(propensities)
+    if a0 == 0:
+        return state, float('inf')
+    tau = -np.log(random.random()) / a0
+    r2 = random.random() * a0
+    cumulative = 0
+    for i, a in enumerate(propensities):
+        cumulative += a
+        if r2 < cumulative:
+            reaction_index = i
+            break
+    new_state = [max(0, state[j] + changes[reaction_index][j]) for j in range(4)]
+    return new_state, tau
+
+def run_gillespie(initial_state, siRNA, pten_off, no_DNA_damage, t_max=48*60):
+    t = 0
+    state = list(initial_state)
+    times = [t]
+    states = [state.copy()]
+    while t < t_max:
+        state, tau = gillespie_step(state, siRNA, pten_off, no_DNA_damage)
+        if tau == float('inf'):
+            break
+        t += tau
+        times.append(t)
+        states.append(state.copy())
+    return np.array(times), np.array(states)
+
 def main():
     print("Default initial values:")
     print("p53_0 = 26854")
@@ -206,6 +261,25 @@ def main():
         filename = os.path.join(rk45_dir, f"{condition.replace(' ', '_')}.png")
         plt.savefig(filename)
         plt.close()
+        gillespie_dir = os.path.join(output_folder, "Gillespie")
+        os.makedirs(gillespie_dir, exist_ok=True)
+        for condition, (siRNA, pten_off, no_DNA_damage) in conditions.items():
+            for realization in range(3):  # At least 3 realizations
+                initial_state = [int(p53_0), int(mdmcyto_0), int(mdmn_0), int(pten_0)]
+                times, states = run_gillespie(initial_state, siRNA, pten_off, no_DNA_damage)
+                plt.figure(figsize=(10,5))
+                plt.step(times, states[:,0], label="p53")
+                plt.step(times, states[:,1], label="MDMcyto")
+                plt.step(times, states[:,2], label="MDMn")
+                plt.step(times, states[:,3], label="PTEN")
+                plt.xlabel("Time [min]")
+                plt.ylabel("Molecule count")
+                plt.title(f"Gillespie: {condition} (run {realization+1})")
+                plt.legend()
+                plt.grid(True)
+                filename = os.path.join(gillespie_dir, f"{condition.replace(' ', '_')}_run{realization+1}.png")
+                plt.savefig(filename)
+                plt.close()
 
 
 
